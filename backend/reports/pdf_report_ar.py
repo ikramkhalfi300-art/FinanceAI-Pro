@@ -9,9 +9,13 @@ import arabic_reshaper
 from bidi.algorithm import get_display
 from datetime import datetime
 import io
+import os
 
-# Register a custom font (replace 'path/to/your/font.ttf' with the actual path)
-pdfmetrics.registerFont(TTFont('ArabicFont', 'Arial.ttf'))
+font_path ='/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
+if os.path.exists(font_path):
+    pdfmetrics.registerFont(TTFont('ArabicFont', font_path))
+else:
+    pdfmetrics.registerFont(TTFont('Arabicfont','Arial.ttf'))    
 
 
 def generate_pdf(analysis: str, currency: str, language: str) -> bytes:
