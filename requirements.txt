@@ -1,0 +1,14 @@
+fastapi 
+uvicorn[standard]
+python-multipart
+pandas
+openpyxl
+pdfplumber 
+pymupdf
+reportlab
+anthropic
+pillow
+python-dotenv
+crewai
+arabic-reshaper
+python-bidi
