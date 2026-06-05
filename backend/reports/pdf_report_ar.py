@@ -2,7 +2,7 @@ import os
 from io import BytesIO
 import urllib.request
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from reportlab.pdfbase import pdfmetrics
@@ -10,7 +10,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from arabic_reshaper import reshape
 from bidi.algorithm import get_display
 
-# رابط مباشر لجلب الخط العربي الاحترافي من خوادم جوجل مباشرة للسيرفر
+# رابط جلب الخط العربي الاحترافي من الإنترنت للسيرفر
 FONT_URL = "https://github.com/google/fonts/raw/main/ofl/amiri/Amiri-Regular.ttf"
 
 try:
