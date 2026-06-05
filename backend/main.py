@@ -90,10 +90,15 @@ async def download_pdf():
         return JSONResponse({"error": "No report available"}, status_code=404)
     
     d = cache["last"]
-    if d["Language"] == "ar":
-        pdf = generate_pdf_ar(d["analysis"])
+    lang = d.get("Language")or d.get("langauge") or "en"
+    analysis_text  = d.get("analysis","")
+    currency_type = d.get("currency","USD")
+
+
+    if lang == "ar":
+        pdf = generate_pdf_ar(analysis_text)
     else:
-        pdf = generate_pdf(d["analysis"], d["currency"], d["Language"])
+        pdf = generate_pdf(analysis_text, currency_type, lang)
 
     return Response(
         content=pdf,
