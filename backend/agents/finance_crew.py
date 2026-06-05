@@ -8,6 +8,7 @@ def run_finance_analysis(data: str, currency: str, language: str, api_key: str) 
         "en": "Respond in English only",
         "fr": "Répondez en français uniquement"
     }
+    language = language.lower().strip()
     lang_instruction = lang_instructions.get(language, lang_instructions["en"])
 
     client = anthropic.Anthropic(api_key=api_key)

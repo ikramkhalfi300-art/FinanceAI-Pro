@@ -82,20 +82,21 @@ async def analyze(
             return JSONResponse({"error": parsed.get('error', 'Failed to parse file')}, status_code=400)
             
         # 2. تشغيل الـ Agents لتوليد التحليل المالي بناءً على النصوص المستخرجة
+        language_lower = Language.lower().strip()
         analysis = run_finance_analysis(data_text, currency, Language, API_KEY)
         
         # 3. حفظ النتيجة والمعلومات الحالية في الكاش بأمان لأجل دالة التحميل
         cache["last"] = {
             "analysis": analysis,
             "currency": currency,
-            "Language": Language
+            "Language": language_lower
         }
         
         return JSONResponse({
             "success": True,
             "analysis": analysis,
             "currency": currency,
-            "Language": Language
+            "Language": language_lower
         })
         
     except Exception as e:
