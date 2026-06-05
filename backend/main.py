@@ -5,6 +5,7 @@ import os, sys
 from dotenv import load_dotenv
 
 load_dotenv()
+latest_analysis = ""
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -60,6 +61,11 @@ async def analyze(
 
         # تشغيل الـ Agents
         analysis = run_finance_analysis(data_text, currency, language, API_KEY)
+
+        global latest_analysis
+        latest_analysis = analysis
+
+        return {"analysis": analysis}
         
         cache["last"] = {
             "analysis": analysis,
@@ -85,7 +91,7 @@ async def download_pdf():
     
     d = cache["last"]
     if d["language"] == "ar":
-        pdf = generate_pdf_ar(d["analysis"], d["currency"], d["language"])
+        pdf = generate_pdf_ar(d["analysis"])
     else:
         pdf = generate_pdf(d["analysis"], d["currency"], d["language"])
 
