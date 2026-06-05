@@ -1,20 +1,20 @@
 import os
+import sys
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-# استدعاء الدوال بأمان متوافق مع البيئة المحلية والسيرفر
-try:
-    from backend.parsers import parse_csv_excel, parse_pdf, parse_image
-    from backend.agents import run_finance_analysis
-    from backend.reports.pdf_report_ar import generate_pdf_ar
-    from backend.reports.pdf_report import generate_pdf
-except ImportError:
-    from parsers import parse_csv_excel, parse_pdf, parse_image
-    from agents import run_finance_analysis
-    from reports.pdf_report_ar import generate_pdf_ar
-    from reports.pdf_report import generate_pdf
+# حل مشكلة المسارات نهائياً: إضافة المجلد الحالي ومجلد backend إلى مسارات بايثون
+current_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(current_dir)
+sys.path.append(os.path.join(current_dir, "backend"))
+
+# استدعاء الدوال بمساراتها الصريحة والمباشرة المضمونة على السيرفر
+from backend.parsers import parse_csv_excel, parse_pdf, parse_image
+from backend.agents import run_finance_analysis
+from backend.reports.pdf_report_ar import generate_pdf_ar
+from backend.reports.pdf_report import generate_pdf
 
 # تحميل متغيرات البيئة
 load_dotenv()
@@ -53,11 +53,11 @@ async def analyze(
         content = await file.read()
         filename = file.filename.lower()
         
-        # 1. إعطاء قيمة ابتدائية للمتغير لتفادي خطأ UnboundLocalError
+        # إعطاء قيم ابتدائية متينة لمنع أي خطأ غير متوقع
         data_text = ""
         parsed = {"success": False, "error": "Unknown file format"}
         
-        # 2. التحقق من نوع الملف وتشغيل المعالج المناسب (هذا هو الجزء المفقود عندكِ!)
+        # 1. التحقق من نوع الملف وتشغيل المعالج المناسب
         if filename.endswith(('.csv', '.xlsx', '.xls')):
             parsed = parse_csv_excel(content, filename)
             data_text = parsed.get('data_text', str(parsed.get('records', '')))
@@ -72,14 +72,14 @@ async def analyze(
         else:
             return JSONResponse({"error": "Unsupported file type"}, status_code=400)
             
-        # التأكد من نجاح المعالجة واستخراج النصوص
+        # التأكد من نجاح معالجة الملف واستخراج النصوص
         if not parsed.get('success'):
             return JSONResponse({"error": parsed.get('error', 'Failed to parse file')}, status_code=400)
             
-        # 3. تشغيل الـ Agents لتوليد التحليل المالي بناءً على النصوص المستخرجة
+        # 2. تشغيل الـ Agents لتوليد التحليل المالي بناءً على النصوص المستخرجة
         analysis = run_finance_analysis(data_text, currency, Language, API_KEY)
         
-        # 4. حفظ النتيجة والمعلومات الحالية في الكاش بأمان لأجل دالة التحميل
+        # 3. حفظ النتيجة والمعلومات الحالية في الكاش بأمان لأجل دالة التحميل
         cache["last"] = {
             "analysis": analysis,
             "currency": currency,
@@ -95,7 +95,7 @@ async def analyze(
 async def download_pdf():
     # التحقق من وجود بيانات في الكاش
     if "last" not in cache:
-        return JSONResponse({"error": "No report available. Please run the analysis first."}, status_code=404)
+        return JSONResponse({"error": "No report available"}, status_code=404)
         
     d = cache["last"]
     
