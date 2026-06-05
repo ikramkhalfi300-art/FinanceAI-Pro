@@ -91,7 +91,12 @@ async def analyze(
             "Language": Language
         }
         
-        return {"analysis": analysis}
+        return JSONResponse({
+            "success": True,
+            "analysis": analysis,
+            "currency": currency,
+            "Language": Language
+        })
         
     except Exception as e:
         import traceback
