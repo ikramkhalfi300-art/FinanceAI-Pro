@@ -4,7 +4,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-# التعديل الذهبي: الاستدعاء المباشر المتوافق مع بيئة تشغيل السيرفر
+# استدعاء الدوال بأمان متوافق مع البيئة المحلية والسيرفر
 try:
     from backend.parsers import parse_csv_excel, parse_pdf, parse_image
     from backend.agents import run_finance_analysis
@@ -32,7 +32,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ذاكرة مؤقتة (Cache) لحفظ آخر تقرير تم إنشاؤه
+# ذاكرة مؤقتة (Cache) لحفظ آخر تقرير تم إنشاؤه بنجاح
 cache = {}
 
 @app.get("/", response_class=HTMLResponse)
@@ -53,7 +53,11 @@ async def analyze(
         content = await file.read()
         filename = file.filename.lower()
         
-        # 1. اختيار المحلل المناسب بناءً على نوع الملف
+        # 1. إعطاء قيمة ابتدائية للمتغير لتفادي خطأ UnboundLocalError
+        data_text = ""
+        parsed = {"success": False, "error": "Unknown file format"}
+        
+        # 2. التحقق من نوع الملف وتشغيل المعالج المناسب (هذا هو الجزء المفقود عندكِ!)
         if filename.endswith(('.csv', '.xlsx', '.xls')):
             parsed = parse_csv_excel(content, filename)
             data_text = parsed.get('data_text', str(parsed.get('records', '')))
@@ -65,18 +69,17 @@ async def analyze(
         elif filename.endswith(('.jpg', '.jpeg', '.png', '.webp')):
             parsed = parse_image(content, filename, API_KEY)
             data_text = parsed.get('data_text', str(parsed.get('records', '')))
-            
         else:
             return JSONResponse({"error": "Unsupported file type"}, status_code=400)
             
-        # التأكد من نجاح معالجة الملف
+        # التأكد من نجاح المعالجة واستخراج النصوص
         if not parsed.get('success'):
-            return JSONResponse({"error": parsed.get('error')}, status_code=400)
+            return JSONResponse({"error": parsed.get('error', 'Failed to parse file')}, status_code=400)
             
-        # 2. تشغيل الـ Agents لتوليد التحليل المالي
+        # 3. تشغيل الـ Agents لتوليد التحليل المالي بناءً على النصوص المستخرجة
         analysis = run_finance_analysis(data_text, currency, Language, API_KEY)
         
-        # 3. حفظ النتيجة والمعلومات الحالية في الكاش بأمان لأجل دالة التحميل
+        # 4. حفظ النتيجة والمعلومات الحالية في الكاش بأمان لأجل دالة التحميل
         cache["last"] = {
             "analysis": analysis,
             "currency": currency,
@@ -90,17 +93,17 @@ async def analyze(
 
 @app.get("/download-pdf")
 async def download_pdf():
+    # التحقق من وجود بيانات في الكاش
     if "last" not in cache:
-        return JSONResponse({"error": "No report available"}, status_code=404)
+        return JSONResponse({"error": "No report available. Please run the analysis first."}, status_code=404)
         
     d = cache["last"]
     
-    # جلب البيانات بأمان لتفادي أي خطأ في حالة الأحرف
     lang = d.get("Language") or d.get("language") or "en"
     analysis_text = d.get("analysis", "")
     currency_type = d.get("currency", "USD")
     
-    # التوجيه الذكي بناءً على اللغة المختارة
+    # التوجيه الذكي للمكتبة المناسبة بناءً على اللغة المختارة لضمان عدم الانهيار
     if lang == "ar":
         pdf = generate_pdf_ar(analysis_text)
     else:
