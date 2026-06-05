@@ -1,68 +1,40 @@
-from crewai import Agent, Task, Crew, LLM
-import asyncio
-import concurrent.futures
+import anthropic
+import os
 
 def run_finance_analysis(data: str, currency: str, language: str, api_key: str) -> str:
     
     lang_instructions = {
-        "ar": "Respond in Arabic only / أجب بالعربي فقط",
+        "ar": "أجب بالعربي فقط",
         "en": "Respond in English only",
         "fr": "Répondez en français uniquement"
     }
     lang_instruction = lang_instructions.get(language, lang_instructions["en"])
 
-    claude_llm = LLM(
+    client = anthropic.Anthropic(api_key=api_key)
+
+    prompt = f"""You are an expert financial analyst. Analyze this financial data.
+Currency: {currency}
+Language instruction: {lang_instruction}
+
+DATA:
+{data}
+
+Provide a comprehensive analysis including:
+1. Revenue & Expense Summary
+2. Net Profit/Loss
+3. Top 3 Financial Risks
+4. Top 3 Recommendations
+5. Cash Flow Assessment
+6. Financial Health Score (1-10)
+
+{lang_instruction}"""
+
+    message = client.messages.create(
         model="claude-sonnet-4-5",
-        api_key=api_key
+        max_tokens=2000,
+        messages=[
+            {"role": "user", "content": prompt}
+        ]
     )
-
-    def _run_crew():
-        analyst = Agent(
-            role="Senior Financial Analyst",
-            goal=f"Analyze financial data accurately. {lang_instruction}",
-            backstory="Expert financial analyst with 15 years experience.",
-            llm=claude_llm,
-            verbose=False
-        )
-
-        advisor = Agent(
-            role="Financial Advisor",
-            goal=f"Provide actionable recommendations. {lang_instruction}",
-            backstory="Strategic financial advisor specializing in optimization.",
-            llm=claude_llm,
-            verbose=False
-        )
-
-        task1 = Task(
-            description=f"""Analyze this financial data in {currency}:
-            {data}
-            Calculate revenues, expenses, net profit, profit margin, pending payments.
-            {lang_instruction}""",
-            expected_output=f"Detailed financial analysis in {currency}",
-            agent=analyst
-        )
-
-        task2 = Task(
-            description=f"""Provide:
-            1. Top 3 risks
-            2. Top 3 recommendations  
-            3. Cash flow assessment
-            4. Financial health score 1-10
-            {lang_instruction}""",
-            expected_output=f"Strategic recommendations in {language}",
-            agent=advisor
-        )
-
-        crew = Crew(
-            agents=[analyst, advisor],
-            tasks=[task1, task2],
-            verbose=False
-        )
-        return str(crew.kickoff())
-
-    # تشغيل في thread منفصل لتجنب تعارض event loop
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        future = executor.submit(_run_crew)
-        result = future.result(timeout=300)
     
-    return result
+    return message.content[0].text
