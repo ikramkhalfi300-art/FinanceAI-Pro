@@ -4,11 +4,17 @@ from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-# استدعاء الدوال الخاصة بك من الملفات الأخرى
-from backend.parsers import parse_csv_excel, parse_pdf, parse_image
-from backend.agents import run_finance_analysis
-from backend.reports.pdf_report_ar import generate_pdf_ar
-from backend.reports.pdf_report import generate_pdf
+# التعديل الذهبي: الاستدعاء المباشر المتوافق مع بيئة تشغيل السيرفر
+try:
+    from backend.parsers import parse_csv_excel, parse_pdf, parse_image
+    from backend.agents import run_finance_analysis
+    from backend.reports.pdf_report_ar import generate_pdf_ar
+    from backend.reports.pdf_report import generate_pdf
+except ImportError:
+    from parsers import parse_csv_excel, parse_pdf, parse_image
+    from agents import run_finance_analysis
+    from reports.pdf_report_ar import generate_pdf_ar
+    from reports.pdf_report import generate_pdf
 
 # تحميل متغيرات البيئة
 load_dotenv()
@@ -89,17 +95,15 @@ async def download_pdf():
         
     d = cache["last"]
     
-    # جلب البيانات بأمان لتفادي أي خطأ في حالة الأحرف (حرف كبير أو صغير)
+    # جلب البيانات بأمان لتفادي أي خطأ في حالة الأحرف
     lang = d.get("Language") or d.get("language") or "en"
     analysis_text = d.get("analysis", "")
     currency_type = d.get("currency", "USD")
     
-    # التوجيه الذكي للمكتبة المناسبة بناءً على اللغة المختارة
+    # التوجيه الذكي بناءً على اللغة المختارة
     if lang == "ar":
-        # استدعاء دالة التقرير العربي (تأخذ متغير واحد فقط)
         pdf = generate_pdf_ar(analysis_text)
     else:
-        # استدعاء دالة التقرير الإنجليزي (تأخذ 3 متغيرات)
         pdf = generate_pdf(analysis_text, currency_type, lang)
         
     return Response(
