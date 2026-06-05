@@ -23,6 +23,9 @@ load_dotenv()
 
 API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
+if not API_KEY:
+    print("ERROR : ANTHROPIC_API_KEY is not found !")
+
 app = FastAPI()
 
 # إعداد الـ CORS للمتصفح
@@ -91,7 +94,10 @@ async def analyze(
         return {"analysis": analysis}
         
     except Exception as e:
-        return JSONResponse({"error": str(e)}, status_code=500)
+        import traceback
+        error_detail = traceback.format_exc()
+        print(f"Error occurred: {error_detail}")
+        return JSONResponse({"error": str(e),"detail":error_detail}, status_code=500)
 
 @app.get("/download-pdf")
 async def download_pdf():
