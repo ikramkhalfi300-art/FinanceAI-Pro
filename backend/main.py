@@ -11,7 +11,9 @@ sys.path.append(current_dir)
 sys.path.append(os.path.join(current_dir, "backend"))
 
 # استدعاء الدوال بمساراتها الصريحة والمباشرة المضمونة على السيرفر
-from backend.parsers import parse_csv_excel, parse_pdf, parse_image
+from backend.parsers.csv_parser import parse_csv_excel
+from backend.parsers.image_parser import parse_image
+from backend.parsers.pdf_parser import parse_pdf
 from backend.agents import run_finance_analysis
 from backend.reports.pdf_report_ar import generate_pdf_ar
 from backend.reports.pdf_report import generate_pdf
