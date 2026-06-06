@@ -54,6 +54,11 @@ async def analyze(
     currency: str = Form(default="USD"),
     Language: str = Form(default="en")
 ):
+    print(f"DEBUG >>> language received: '{Language}'", flush=True)
+
+    language_lower=Language.lower().strip()
+    print(f"DEBUG >>> language_lower: '{language_lower}'",flush=True)
+    
     try:
         content = await file.read()
         filename = file.filename.lower()

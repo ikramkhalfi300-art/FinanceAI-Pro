@@ -218,7 +218,7 @@ async function analyze() {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('currency', document.getElementById('currency').value);
-    formData.append('language', document.getElementById('reportLang').value);
+    formData.append('Language', document.getElementById('reportLang').value);
 
     try {
         const res = await fetch('/analyze', {method:'POST', body:formData});
