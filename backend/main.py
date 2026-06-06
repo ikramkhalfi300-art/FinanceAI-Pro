@@ -83,7 +83,7 @@ async def analyze(
             
         # 2. تشغيل الـ Agents لتوليد التحليل المالي بناءً على النصوص المستخرجة
         language_lower = Language.lower().strip()
-        analysis = run_finance_analysis(data_text, currency, Language, API_KEY)
+        analysis = run_finance_analysis(data_text, currency, language_lower , API_KEY)
         
         # 3. حفظ النتيجة والمعلومات الحالية في الكاش بأمان لأجل دالة التحميل
         cache["last"] = {
