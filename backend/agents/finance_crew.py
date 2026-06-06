@@ -4,6 +4,8 @@ import os
 def run_finance_analysis(data: str, currency: str, language: str, api_key: str) -> str:
     
     language = language.lower().strip()
+
+    print(f"CREW DEBUG >>> language = '{language}'", flush=True)
     
     prompts = {
         "ar": f"""أنت محلل مالي خبير. حلل هذه البيانات المالية بالعربي فقط.
