@@ -215,10 +215,13 @@ async function analyze() {
     document.getElementById('resultCard').style.display = 'none';
     document.getElementById('errorMsg').style.display = 'none';
 
+    const selectedLang = currentLang;
+    console.log("Sending language:", selectedLang);
+
     const formData = new FormData();
     formData.append('file', file);
     formData.append('currency', document.getElementById('currency').value);
-    formData.append('Language', document.getElementById('reportLang').value);
+    formData.append('Language', selectedLang);
 
     try {
         const res = await fetch('/analyze', {method:'POST', body:formData});
@@ -238,6 +241,7 @@ async function analyze() {
         document.getElementById('analyzeBtn').disabled = false;
     }
 }
+
 
 function downloadPDF() { window.open('/download-pdf', '_blank'); }
 
